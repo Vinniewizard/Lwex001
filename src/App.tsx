@@ -1959,6 +1959,10 @@ export default function App() {
         return { ...prev, mode: 'demo', balance: demoAccountBalance };
       }
     });
+    hasSyncedFromServerRef.current = false;
+    setTimeout(() => {
+      pullUserState();
+    }, 50);
     triggerToast(`Switched workspace to ${mode.toUpperCase()} wallet mode.`, true);
   };
 
@@ -6638,8 +6642,38 @@ function ProPlayGridModal({
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 font-bold uppercase block">Expiry Duration</label>
-            <div className="flex gap-1">
+            <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold uppercase">
+              <span>Expiry Duration</span>
+              <span className="text-amber-400 font-bold">{spotDuration} {spotDurationUnit}</span>
+            </div>
+            {/* Quick Duration Chips */}
+            <div className="grid grid-cols-6 gap-1">
+              {[
+                { label: '5s', dur: 5, unit: 'seconds' },
+                { label: '15s', dur: 15, unit: 'seconds' },
+                { label: '30s', dur: 30, unit: 'seconds' },
+                { label: '1m', dur: 1, unit: 'minutes' },
+                { label: '5t', dur: 5, unit: 'ticks' },
+                { label: '10t', dur: 10, unit: 'ticks' },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => {
+                    setSpotDuration(item.dur);
+                    setSpotDurationUnit(item.unit as any);
+                  }}
+                  className={`py-1 rounded text-[9px] font-mono font-bold border transition-all cursor-pointer text-center ${
+                    spotDuration === item.dur && spotDurationUnit === item.unit
+                      ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
+                      : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1 pt-1">
               <input
                 type="number"
                 min="1"
@@ -6685,7 +6719,7 @@ function ProPlayGridModal({
             <>
               <button
                 type="button"
-                onClick={() => executeSpotTrade('call')}
+                onClick={() => executeSpotTrade('call', stakeNum, contractType, spotDuration, spotDurationUnit, targetDigit, barrierOffset)}
                 className="rounded-xl bg-gradient-to-b from-[#089981] to-[#067a67] hover:from-[#0aa98f] hover:to-[#089981] text-white p-3 font-black text-xs uppercase shadow-lg shadow-emerald-950/50 transition-all cursor-pointer flex flex-col justify-between border border-emerald-500/40 active:scale-95"
               >
                 <div className="flex justify-between items-center w-full">
@@ -6698,7 +6732,7 @@ function ProPlayGridModal({
               </button>
               <button
                 type="button"
-                onClick={() => executeSpotTrade('put')}
+                onClick={() => executeSpotTrade('put', stakeNum, contractType, spotDuration, spotDurationUnit, targetDigit, barrierOffset)}
                 className="rounded-xl bg-gradient-to-b from-[#f23645] to-[#c92230] hover:from-[#f44754] hover:to-[#f23645] text-white p-3 font-black text-xs uppercase shadow-lg shadow-rose-950/50 transition-all cursor-pointer flex flex-col justify-between border border-rose-500/40 active:scale-95"
               >
                 <div className="flex justify-between items-center w-full">
@@ -6716,7 +6750,7 @@ function ProPlayGridModal({
             <>
               <button
                 type="button"
-                onClick={() => executeSpotTrade('over')}
+                onClick={() => executeSpotTrade('over', stakeNum, contractType, spotDuration, spotDurationUnit, targetDigit, barrierOffset)}
                 className="rounded-xl bg-gradient-to-b from-[#089981] to-[#067a67] hover:from-[#0aa98f] hover:to-[#089981] text-white p-3 font-black text-xs uppercase shadow-lg shadow-emerald-950/50 transition-all cursor-pointer flex flex-col justify-between border border-emerald-500/40 active:scale-95"
               >
                 <div className="flex justify-between items-center w-full">
@@ -6729,7 +6763,7 @@ function ProPlayGridModal({
               </button>
               <button
                 type="button"
-                onClick={() => executeSpotTrade('under')}
+                onClick={() => executeSpotTrade('under', stakeNum, contractType, spotDuration, spotDurationUnit, targetDigit, barrierOffset)}
                 className="rounded-xl bg-gradient-to-b from-[#f23645] to-[#c92230] hover:from-[#f44754] hover:to-[#f23645] text-white p-3 font-black text-xs uppercase shadow-lg shadow-rose-950/50 transition-all cursor-pointer flex flex-col justify-between border border-rose-500/40 active:scale-95"
               >
                 <div className="flex justify-between items-center w-full">
@@ -6747,7 +6781,7 @@ function ProPlayGridModal({
             <>
               <button
                 type="button"
-                onClick={() => executeSpotTrade('touch')}
+                onClick={() => executeSpotTrade('touch', stakeNum, contractType, spotDuration, spotDurationUnit, targetDigit, barrierOffset)}
                 className="rounded-xl bg-gradient-to-b from-[#089981] to-[#067a67] hover:from-[#0aa98f] hover:to-[#089981] text-white p-3 font-black text-xs uppercase shadow-lg shadow-emerald-950/50 transition-all cursor-pointer flex flex-col justify-between border border-emerald-500/40 active:scale-95"
               >
                 <div className="flex justify-between items-center w-full">
@@ -6760,7 +6794,7 @@ function ProPlayGridModal({
               </button>
               <button
                 type="button"
-                onClick={() => executeSpotTrade('no-touch')}
+                onClick={() => executeSpotTrade('no-touch', stakeNum, contractType, spotDuration, spotDurationUnit, targetDigit, barrierOffset)}
                 className="rounded-xl bg-gradient-to-b from-[#f23645] to-[#c92230] hover:from-[#f44754] hover:to-[#f23645] text-white p-3 font-black text-xs uppercase shadow-lg shadow-rose-950/50 transition-all cursor-pointer flex flex-col justify-between border border-rose-500/40 active:scale-95"
               >
                 <div className="flex justify-between items-center w-full">
